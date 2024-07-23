@@ -26,16 +26,16 @@ class App {
 		this.modal = new Modal();
 
 		window.addEventListener('load', () => {
-            this.initialize();
-        });
+			this.initialize();
+		});
 	}
 
 	initialize() {
 		if(document.querySelector('header')) document.querySelector('header').remove();
-        if(document.querySelector('main'))   document.querySelector('main')  .remove();
-        if(document.querySelector('footer')) document.querySelector('footer').remove();
+		if(document.querySelector('main'))   document.querySelector('main')  .remove();
+		if(document.querySelector('footer')) document.querySelector('footer').remove();
 
-        document.querySelector('body').innerHTML += `<header></header><main><div class="container"><div class="cards"></div></div></main><footer><div class="container"><p>&copy; 2023&nbsp;<a href="//github.com/kanaaa224/" style="color:inherit;"><u>kanaaa224</u></a>.</p></div></footer>`;
+		document.querySelector('body').innerHTML += `<header></header><main><div class="container"><div class="cards"></div></div></main><footer><div class="container"><p>&copy; 2023&nbsp;<a href="//github.com/kanaaa224/" style="color:inherit;"><u>kanaaa224</u></a>.</p></div></footer>`;
 
 		this.modal.install({ 'content': '<h1>開発中！</h1><p>coming soon!</p><div class="btn"><div onclick=app.modal.uninstall();>閉じる</div></div>' });
 	}

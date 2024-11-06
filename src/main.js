@@ -146,11 +146,12 @@ class App {
             window.addEventListener('mousemove', checkDeviceType);
             window.addEventListener('touchstart', checkDeviceType);
 
-            let playBGM = this.storageGetData('playBGM');
-            let playSE  = this.storageGetData('playSE');
+            let lsData = this.storageGetData();
 
-            if(playBGM === true || playBGM === false) this.game.settings.playBGM = playBGM;
-            if(playSE  === true || playSE  === false) this.game.settings.playSE  = playSE;
+            if(lsData) {
+                if('playBGM' in lsData) this.game.settings.playBGM = lsData.playBGM;
+                if('playSE'  in lsData) this.game.settings.playSE  = lsData.playSE;
+            }
 
             this.modal.render({ content: `
                 <h1><i class="bi bi-music-note-beamed"></i></h1>
@@ -272,7 +273,7 @@ class App {
 
         let lsData = localStorage.getItem(lsKey);
 
-        if(!lsData) return false;
+        if(!lsData) return null;
 
         lsData = JSON.parse(lsData);
 

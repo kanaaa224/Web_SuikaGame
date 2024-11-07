@@ -33,8 +33,8 @@ class Modal {
 class Game {
     constructor() {
         this.sounds = {
-            bgm_main:  new Audio('./res/bgm_main.mp3'),
-            se_click:  new Audio('./res/se_click.mp3')
+            bgm_main: new Audio('./res/bgm_main.mp3'),
+            se_click: new Audio('./res/se_click.mp3')
         };
 
         for(let i = 0; i < 11; i++) {

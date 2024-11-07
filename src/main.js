@@ -34,47 +34,32 @@ class Game {
     constructor() {
         this.sounds = {
             bgm_main:  new Audio('./res/bgm_main.mp3'),
-            se_click:  new Audio('./res/se_click.mp3'),
-            se_pop_0:  new Audio('./res/se_pop-0.mp3'),
-            se_pop_1:  new Audio('./res/se_pop-1.mp3'),
-            se_pop_2:  new Audio('./res/se_pop-2.mp3'),
-            se_pop_3:  new Audio('./res/se_pop-3.mp3'),
-            se_pop_4:  new Audio('./res/se_pop-4.mp3'),
-            se_pop_5:  new Audio('./res/se_pop-5.mp3'),
-            se_pop_6:  new Audio('./res/se_pop-6.mp3'),
-            se_pop_7:  new Audio('./res/se_pop-7.mp3'),
-            se_pop_8:  new Audio('./res/se_pop-8.mp3'),
-            se_pop_9:  new Audio('./res/se_pop-9.mp3'),
-            se_pop_10: new Audio('./res/se_pop-10.mp3'),
+            se_click:  new Audio('./res/se_click.mp3')
         };
 
-        this.images = {
-            circle_0:  './res/circle-0.png',
-            circle_1:  './res/circle-1.png',
-            circle_2:  './res/circle-2.png',
-            circle_3:  './res/circle-3.png',
-            circle_4:  './res/circle-4.png',
-            circle_5:  './res/circle-5.png',
-            circle_6:  './res/circle-6.png',
-            circle_7:  './res/circle-7.png',
-            circle_8:  './res/circle-8.png',
-            circle_9:  './res/circle-9.png',
-            circle_10: './res/circle-10.png',
-        };
+        for(let i = 0; i < 12; i++) {
+            this.sounds[`se_pop_${i}`] = new Audio(`./res/se_pop-${i}.mp3`);
+        }
 
-        this.circles = [
-            { radius: 24,  points: 1,  img_src: this.images.circle_0,  se_src: this.sounds.se_pop_0  },
-            { radius: 32,  points: 3,  img_src: this.images.circle_1,  se_src: this.sounds.se_pop_1  },
-            { radius: 40,  points: 6,  img_src: this.images.circle_2,  se_src: this.sounds.se_pop_2  },
-            { radius: 56,  points: 9,  img_src: this.images.circle_3,  se_src: this.sounds.se_pop_3  },
-            { radius: 64,  points: 11, img_src: this.images.circle_4,  se_src: this.sounds.se_pop_4  },
-            { radius: 72,  points: 13, img_src: this.images.circle_5,  se_src: this.sounds.se_pop_5  },
-            { radius: 84,  points: 15, img_src: this.images.circle_6,  se_src: this.sounds.se_pop_6  },
-            { radius: 96,  points: 17, img_src: this.images.circle_7,  se_src: this.sounds.se_pop_7  },
-            { radius: 128, points: 19, img_src: this.images.circle_8,  se_src: this.sounds.se_pop_8  },
-            { radius: 160, points: 21, img_src: this.images.circle_9,  se_src: this.sounds.se_pop_9  },
-            { radius: 192, points: 23, img_src: this.images.circle_10, se_src: this.sounds.se_pop_10 }
-        ];
+        this.images = {};
+
+        for(let i = 0; i < 12; i++) {
+            this.images[`circle_${i}`] = `./res/circle-${i}.png`;
+        }
+
+        let radius_array = [ 24, 32, 40, 56, 64, 72, 84, 96, 128, 160, 192 ];
+        let points_array = [ 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33 ];
+
+        this.circles = [];
+
+        for(let i = 0; i < 12; i++) {
+            this.circles[i] = {
+                radius: radius_array[i],
+                points: points_array[i],
+                img_src: this.images[`circle_${i}`],
+                se_src: this.sounds[`se_pop_${i}`]
+            };
+        }
 
         this.settings = {
             playBGM: true,

@@ -37,13 +37,13 @@ class Game {
             se_click:  new Audio('./res/se_click.mp3')
         };
 
-        for(let i = 0; i < 12; i++) {
+        for(let i = 0; i < 11; i++) {
             this.sounds[`se_pop_${i}`] = new Audio(`./res/se_pop-${i}.mp3`);
         }
 
         this.images = {};
 
-        for(let i = 0; i < 12; i++) {
+        for(let i = 0; i < 11; i++) {
             this.images[`circle_${i}`] = `./res/circle-${i}.png`;
         }
 
@@ -52,7 +52,7 @@ class Game {
 
         this.circles = [];
 
-        for(let i = 0; i < 12; i++) {
+        for(let i = 0; i < 11; i++) {
             this.circles[i] = {
                 radius: radius_array[i],
                 points: points_array[i],

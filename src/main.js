@@ -47,15 +47,15 @@ class Game {
             this.images[`circle_${i}`] = `./res/circle-${i}.png`;
         }
 
-        let radius_array = [ 24, 32, 40, 56, 64, 72, 84, 96, 128, 160, 192 ];
-        let points_array = [ 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33 ];
+        let circle_radius_array = [ 24, 32, 40, 56, 64, 72, 84, 96, 128, 160, 192 ];
+        let circle_points_array = [ 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33 ];
 
         this.circles = [];
 
         for(let i = 0; i < 11; i++) {
             this.circles[i] = {
-                radius: radius_array[i],
-                points: points_array[i],
+                radius: circle_radius_array[i],
+                points: circle_points_array[i],
                 img_src: this.images[`circle_${i}`],
                 se_src: this.sounds[`se_pop_${i}`]
             };

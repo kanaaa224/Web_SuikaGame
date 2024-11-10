@@ -30,7 +30,7 @@ class Modal {
     }
 }
 
-class Game {
+class CircleGame {
     constructor() {
         this.sounds = {
             bgm_main: new Audio('./res/bgm_main.mp3'),
@@ -61,26 +61,84 @@ class Game {
             };
         }
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
         this.settings = {
             playBGM: true,
-            playSE: true
+            playSE:  true
         };
 
-        this.config = {};
-    }
+        this.configs = {
+            frictionParameters: {
+                friction:       0.006,
+                frictionStatic: 0.006,
+                frictionAir:    0,
+                restitution:    0.1
+            }
+        };
 
-    initialize() {
-        if(this.settings.playBGM) {
-            this.sounds.bgm_main.loop = true;
-            this.sounds.bgm_main.play();
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        this.constants = {
+            gameStates: {
+                UNINITIALIZED: 0,
+                INITIALIZED: 1,
+                READY: 2,
+                DROP: 3,
+                END: 4
+            }
         }
 
-        let clickEvent = (event) => {
-            if(this.settings.playSE) this.sounds.se_click.play();
-        };
+        this.state = this.constants.gameStates.UNINITIALIZED;
 
-        document.addEventListener('click', clickEvent);
-        document.addEventListener('touchend', clickEvent);
+        // 擬似乱数生成アルゴリズム
+        function mulberry32(a) {
+            return function() {
+                let t = a += 0x6D2B79F5;
+                t = Math.imul(t ^ t >>> 15, t | 1);
+                t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            }
+        }
+
+        this.getRandomNum = mulberry32(Date.now());
+    }
+
+    initialize(selectors = 'body') {
+        if(!this.state) {
+            if(this.settings.playBGM) {
+                this.sounds.bgm_main.loop = true;
+                this.sounds.bgm_main.play();
+                this.sounds.bgm_main.volume = 1;
+            }
+
+            let clickEvent = (event) => {
+                if(this.settings.playSE) this.sounds.se_click.play();
+            };
+
+            document.addEventListener('click', clickEvent);
+            document.addEventListener('touchend', clickEvent);
+
+            //document.addEventListener('load', () => {});
+            //document.addEventListener('resize', () => {});
+        }
+
+        if(document.querySelector(`${selectors} .circleGame`)) document.querySelector(`${selectors} .circleGame`).remove();
+
+        document.querySelector(selectors).innerHTML += `
+            <div class="circleGame">
+                <div class="container">
+                </div>
+            </div>
+        `;
+
+        this.score_current = 0;
+        this.score_high = 0;
+
+        this.circle_current = this.circles[0];
+        this.circle_next = this.circles[0];
+
+        this.state = this.constants.gameStates.INITIALIZED;
 
         return true;
     }
@@ -106,7 +164,7 @@ class App {
         this.version = 'v1.0.0';
 
         this.modal = new Modal();
-        this.game  = new Game();
+        this.game  = new CircleGame();
 
         window.addEventListener('load', () => {
             if(window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.classList.add('darkMode');
@@ -170,7 +228,7 @@ class App {
             </footer>
         `;
 
-        app.game.initialize();
+        this.game.initialize();
 
         return true;
     }

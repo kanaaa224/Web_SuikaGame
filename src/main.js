@@ -560,7 +560,7 @@ class App {
 }
 
 const {
-	Engine, Render, Runner, Composites, Common, MouseConstraint, Mouse, Composite, Bodies, Events,
+    Engine, Render, Runner, Composites, Common, MouseConstraint, Mouse, Composite, Bodies, Events,
 } = Matter;
 
 const app = new App();

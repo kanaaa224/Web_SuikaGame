@@ -144,37 +144,35 @@ class CircleGame {
             </div>
         `;
 
-        if(true/*!this.state*/) {
-            this.matter = {
-                engine: Engine.create(),
-                runner: Runner.create()
-            };
+        this.matter = {
+            engine: Engine.create(),
+            runner: Runner.create()
+        };
 
-            this.matter.render = Render.create({
-                element: document.querySelector(`.circleGame .container`),
-                engine: this.matter.engine,
-                options: {
-                    width: this.configs.canvas.width,
-                    height: this.configs.canvas.height,
-                    wireframes: false,
-                    background: this.configs.canvas.backgroundColor
+        this.matter.render = Render.create({
+            element: document.querySelector(`.circleGame .container`),
+            engine: this.matter.engine,
+            options: {
+                width: this.configs.canvas.width,
+                height: this.configs.canvas.height,
+                wireframes: false,
+                background: this.configs.canvas.backgroundColor
+            }
+        });
+
+        this.matter.mouse = Mouse.create(this.matter.render.canvas);
+
+        this.matter.mouseConstraint = MouseConstraint.create(this.matter.engine, {
+            mouse: this.matter.mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: {
+                    visible: false
                 }
-            });
+            }
+        });
 
-            this.matter.mouse = Mouse.create(this.matter.render.canvas);
-
-            this.matter.mouseConstraint = MouseConstraint.create(this.matter.engine, {
-                mouse: this.matter.mouse,
-                constraint: {
-                    stiffness: 0.2,
-                    render: {
-                        visible: false
-                    }
-                }
-            });
-
-            this.matter.render.mouse = this.matter.mouse;
-        }
+        this.matter.render.mouse = this.matter.mouse;
 
         if(!this.state) {
             let resizeCanvas = () => {
@@ -197,10 +195,6 @@ class CircleGame {
 
                 this.matter.render.canvas.style.width  = `${newWidth}px`;
                 this.matter.render.canvas.style.height = `${newHeight}px`;
-
-                /*ui.style.width = `${this.configs.canvas.width}px`;
-                ui.style.height = `${this.configs.canvas.height}px`;
-                ui.style.transform = `scale(${scale})`;*/
             };
 
             resizeCanvas();
@@ -244,31 +238,31 @@ class CircleGame {
     }
 
     generateCircleBody(x, y, index, options = {}) {
-		let circle = this.circles[index];
+        let circle = this.circles[index];
 
-		let circleObject = Bodies.circle(x, y, circle.radius, {
-			...this.configs.frictionParameters,
-			...options,
-			render: {
+        let circleObject = Bodies.circle(x, y, circle.radius, {
+            ...this.configs.frictionParameters,
+            ...options,
+            render: {
                 sprite: {
                     texture: circle.img_src,
                     xScale: circle.radius / 512,
                     yScale: circle.radius / 512
                 }
             }
-		});
+        });
 
-		circleObject.index = index;
+        circleObject.index = index;
 
-		return circleObject;
-	}
+        return circleObject;
+    }
 
-	addCircle(x) {
+    addCircle(x) {
         if(this.state != this.constants.gameStates.READY) return false;
 
         this.state = this.constants.gameStates.DROP;
 
-		Composite.add(this.matter.engine.world, this.generateCircleBody(x, 0, this.circle_current));
+        Composite.add(this.matter.engine.world, this.generateCircleBody(x, 0, this.circle_current));
 
         this.circle_current = this.circle_next;
         this.circle_next    = Math.floor(this.getRandomNum() * 5); // 0 から 4
@@ -289,14 +283,14 @@ class CircleGame {
             }
         );
 
-		return setTimeout(() => {
-			if(this.state == this.constants.gameStates.DROP) {
-				Composite.add(this.matter.engine.world, this.game_previewCircle);
+        return setTimeout(() => {
+            if(this.state == this.constants.gameStates.DROP) {
+                Composite.add(this.matter.engine.world, this.game_previewCircle);
 
-				this.state = this.constants.gameStates.READY;
-			}
-		}, 500);
-	}
+                this.state = this.constants.gameStates.READY;
+            }
+        }, 500);
+    }
 
     start() {
         if(this.state != this.constants.gameStates.INITIALIZED) return false;
@@ -304,7 +298,7 @@ class CircleGame {
         this.state = this.constants.gameStates.START;
 
         Render.run(this.matter.render);
-		Runner.run(this.matter.runner, this.matter.engine);
+        Runner.run(this.matter.runner, this.matter.engine);
 
         let stage_padding = 64;
         let stage_bottom_height = this.configs.canvas.bottom.height;

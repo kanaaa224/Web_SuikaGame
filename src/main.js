@@ -46,7 +46,7 @@ class CircleGame {
         };
 
         for(let i = 0; i < 11; i++) {
-            this.images[`circle_${i}`] = `./res/circle-${i}.png`;
+            this.images[`circle_${i}`] = `./res/circle_fruits-${i}.png`;
         }
 
         let circle_radius_array = [ 24, 32, 40, 56, 64, 72, 84, 96, 128, 160, 192 ];

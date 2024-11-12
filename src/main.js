@@ -41,7 +41,9 @@ class CircleGame {
             this.sounds[`se_pop_${i}`] = new Audio(`./res/se_pop-${i}.mp3`);
         }
 
-        this.images = {};
+        this.images = {
+            pop: './res/pop.png'
+        };
 
         for(let i = 0; i < 11; i++) {
             this.images[`circle_${i}`] = `./res/circle-${i}.png`;
@@ -74,6 +76,19 @@ class CircleGame {
                 frictionStatic: 0.006,
                 frictionAir:    0,
                 restitution:    0.1
+            },
+
+            canvas: {
+                width:  640,
+                height: 960,
+
+                backgroundColor: '#ffdcae',
+
+                bottom: {
+                    height: 48,
+
+                    backgroundColor: '#ffeedb'
+                }
             }
         };
 
@@ -83,9 +98,10 @@ class CircleGame {
             gameStates: {
                 UNINITIALIZED: 0,
                 INITIALIZED: 1,
-                READY: 2,
-                DROP: 3,
-                END: 4
+                START: 2,
+                READY: 3,
+                DROP: 4,
+                END: 5
             }
         }
 
@@ -118,25 +134,87 @@ class CircleGame {
 
             document.addEventListener('click', clickEvent);
             document.addEventListener('touchend', clickEvent);
-
-            //document.addEventListener('load', () => {});
-            //document.addEventListener('resize', () => {});
         }
 
         if(document.querySelector(`${selectors} .circleGame`)) document.querySelector(`${selectors} .circleGame`).remove();
 
         document.querySelector(selectors).innerHTML += `
             <div class="circleGame">
-                <div class="container">
-                </div>
+                <div class="container"></div>
             </div>
         `;
 
-        this.score_current = 0;
-        this.score_high = 0;
+        if(true/*!this.state*/) {
+            this.matter = {
+                engine: Engine.create(),
+                runner: Runner.create()
+            };
 
-        this.circle_current = this.circles[0];
-        this.circle_next = this.circles[0];
+            this.matter.render = Render.create({
+                element: document.querySelector(`.circleGame .container`),
+                engine: this.matter.engine,
+                options: {
+                    width: this.configs.canvas.width,
+                    height: this.configs.canvas.height,
+                    wireframes: false,
+                    background: this.configs.canvas.backgroundColor
+                }
+            });
+
+            this.matter.mouse = Mouse.create(this.matter.render.canvas);
+
+            this.matter.mouseConstraint = MouseConstraint.create(this.matter.engine, {
+                mouse: this.matter.mouse,
+                constraint: {
+                    stiffness: 0.2,
+                    render: {
+                        visible: false
+                    }
+                }
+            });
+
+            this.matter.render.mouse = this.matter.mouse;
+        }
+
+        if(!this.state) {
+            let resizeCanvas = () => {
+                let screenWidth  = window.clientWidth;
+                let screenHeight = window.clientHeight;
+
+                let newWidth  = this.configs.canvas.width;
+                let newHeight = this.configs.canvas.height;
+                let scale     = 1;
+
+                if((screenWidth * 1.5) > screenHeight) {
+                    newWidth  = newHeight / 1.5;
+                    newHeight = Math.min(this.configs.canvas.height, screenHeight);
+                    scale     = newHeight / this.configs.canvas.height;
+                } else {
+                    newWidth  = Math.min(this.configs.canvas.width, screenWidth);
+                    newHeight = newWidth * 1.5;
+                    scale     = newWidth / this.configs.canvas.width;
+                }
+
+                this.matter.render.canvas.style.width  = `${newWidth}px`;
+                this.matter.render.canvas.style.height = `${newHeight}px`;
+
+                /*ui.style.width = `${this.configs.canvas.width}px`;
+                ui.style.height = `${this.configs.canvas.height}px`;
+                ui.style.transform = `scale(${scale})`;*/
+            };
+
+            resizeCanvas();
+
+            document.body.onresize = resizeCanvas;
+        }
+
+        this.game_mergedCircles = Array.apply(null, Array(this.circles.length)).map(() => 0);
+
+        this.score_current = 0;
+        this.score_high    = 0;
+
+        this.circle_current = 0;
+        this.circle_next    = 0;
 
         this.state = this.constants.gameStates.INITIALIZED;
 
@@ -154,6 +232,145 @@ class CircleGame {
             this.sounds.bgm_main.pause();
             this.sounds.bgm_main.volume = 0;
         }
+
+        return true;
+    }
+
+    calculateScore() {
+        return this.game_mergedCircles.reduce((total, count, index) => {
+            let value = this.circles[index].points * count;
+            return total + value;
+        }, 0);
+    }
+
+    generateCircleBody(x, y, index, options = {}) {
+		let circle = this.circles[index];
+
+		let circleObject = Bodies.circle(x, y, circle.radius, {
+			...this.configs.frictionParameters,
+			...options,
+			render: {
+                sprite: {
+                    texture: circle.img_src,
+                    xScale: circle.radius / 512,
+                    yScale: circle.radius / 512
+                }
+            }
+		});
+
+		circleObject.index = index;
+
+		return circleObject;
+	}
+
+	addCircle(x) {
+        if(this.state != this.constants.gameStates.READY) return false;
+
+        this.state = this.constants.gameStates.DROP;
+
+		Composite.add(this.matter.engine.world, this.generateCircleBody(x, 0, this.circle_current));
+
+        this.circle_current = this.circle_next;
+        this.circle_next    = Math.floor(this.getRandomNum() * 5); // 0 から 4
+
+        //this.score_current = this.calculateScore();
+
+        Composite.remove(this.matter.engine.world, this.game_previewCircle);
+
+        this.game_previewCircle = this.generateCircleBody(
+            this.matter.render.mouse.position.x,
+            0,
+            this.circle_current,
+            {
+                isStatic: true,
+                collisionFilter: {
+                    mask: 0x0040
+                }
+            }
+        );
+
+		return setTimeout(() => {
+			if(this.state == this.constants.gameStates.DROP) {
+				Composite.add(this.matter.engine.world, this.game_previewCircle);
+
+				this.state = this.constants.gameStates.READY;
+			}
+		}, 500);
+	}
+
+    start() {
+        if(this.state != this.constants.gameStates.INITIALIZED) return false;
+
+        this.state = this.constants.gameStates.START;
+
+        Render.run(this.matter.render);
+		Runner.run(this.matter.runner, this.matter.engine);
+
+        let stage_padding = 64;
+        let stage_bottom_height = this.configs.canvas.bottom.height;
+        let stage_options = {
+            isStatic: true,
+            render: {
+                fillStyle: this.configs.canvas.bottom.backgroundColor
+            },
+            ...this.configs.frictionParameters,
+        };
+
+        let stageObjects = [
+            Bodies.rectangle(
+                -(stage_padding / 2),
+                this.configs.canvas.height / 2,
+                stage_padding,
+                this.configs.canvas.height,
+                stage_options
+            ),
+
+            Bodies.rectangle(
+                this.configs.canvas.width + (stage_padding / 2),
+                this.configs.canvas.height / 2,
+                stage_padding,
+                this.configs.canvas.height,
+                stage_options
+            ),
+
+            Bodies.rectangle(
+                this.configs.canvas.width / 2,
+                this.configs.canvas.height + (stage_padding / 2) - stage_bottom_height,
+                this.configs.canvas.width,
+                stage_padding,
+                stage_options
+            )
+        ];
+
+        Composite.add(this.matter.engine.world, stageObjects);
+
+        //this.score_current = this.calculateScore();
+
+        this.game_previewCircle = this.generateCircleBody(
+            this.configs.canvas.width / 2,
+            0,
+            this.circle_current,
+            {
+                isStatic: true
+            }
+        );
+
+        Composite.add(this.matter.engine.world, this.game_previewCircle);
+
+        Events.on(this.matter.mouseConstraint, 'mousemove', (e) => {
+            if(this.state != this.constants.gameStates.READY) return false;
+            if(!this.game_previewCircle) return false;
+
+            this.game_previewCircle.position.x = e.mouse.position.x;
+        });
+
+        Events.on(this.matter.mouseConstraint, 'mouseup', (e) => {
+            this.addCircle(e.mouse.position.x);
+        });
+
+        setTimeout(() => {
+            this.state = this.constants.gameStates.READY;
+        }, 250);
 
         return true;
     }
@@ -228,7 +445,8 @@ class App {
             </footer>
         `;
 
-        this.game.initialize();
+        this.game.initialize('main .container');
+        this.game.start();
 
         return true;
     }
@@ -346,5 +564,9 @@ class App {
         return true;
     }
 }
+
+const {
+	Engine, Render, Runner, Composites, Common, MouseConstraint, Mouse, Composite, Bodies, Events,
+} = Matter;
 
 const app = new App();

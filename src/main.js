@@ -59,7 +59,7 @@ class CircleGame {
                 radius: circle_radius_array[i],
                 points: circle_points_array[i],
                 img_src: this.images[`circle_${i}`],
-                se_src: this.sounds[`se_pop_${i}`]
+                se_pop: this.sounds[`se_pop_${i}`]
             };
         }
 
@@ -267,8 +267,6 @@ class CircleGame {
         this.circle_current = this.circle_next;
         this.circle_next    = Math.floor(this.getRandomNum() * 5); // 0 から 4
 
-        //this.score_current = this.calculateScore();
-
         Composite.remove(this.matter.engine.world, this.game_previewCircle);
 
         this.game_previewCircle = this.generateCircleBody(
@@ -290,6 +288,39 @@ class CircleGame {
                 this.state = this.constants.gameStates.READY;
             }
         }, 500);
+    }
+
+    addPop(x, y, r) {
+        let circleObject = Bodies.circle(x, y, r, {
+            isStatic: true,
+            collisionFilter: {
+                mask: 0x0040
+            },
+            angle: this.getRandomNum() * (Math.PI * 2),
+            render: {
+                sprite: {
+                    texture: this.images.pop,
+                    xScale: r / 384,
+                    yScale: r / 384,
+                }
+            }
+        });
+
+        Composite.add(this.matter.engine.world, circleObject);
+
+        return setTimeout(() => {
+            Composite.remove(this.matter.engine.world, circleObject);
+        }, 100);
+    }
+
+    end() {
+        this.state = this.constants.gameStates.END;
+
+        this.matter.runner.enabled = false;
+
+        this.score_high = this.calculateScore();
+
+        return true;
     }
 
     start() {
@@ -338,8 +369,6 @@ class CircleGame {
 
         Composite.add(this.matter.engine.world, stageObjects);
 
-        //this.score_current = this.calculateScore();
-
         this.game_previewCircle = this.generateCircleBody(
             this.configs.canvas.width / 2,
             0,
@@ -360,6 +389,46 @@ class CircleGame {
 
         Events.on(this.matter.mouseConstraint, 'mouseup', (e) => {
             this.addCircle(e.mouse.position.x);
+
+            this.score_current = this.calculateScore();
+        });
+
+        Events.on(this.matter.engine, 'collisionStart', (e) => {
+            for(let i = 0; i < e.pairs.length; i++) {
+                const { bodyA, bodyB } = e.pairs[i];
+
+                if(bodyA.isStatic || bodyB.isStatic) continue;
+
+                let aY = bodyA.position.y + bodyA.circleRadius;
+                let bY = bodyB.position.y + bodyB.circleRadius;
+
+                let loseHeight = 84;
+
+                if(aY < loseHeight || bY < loseHeight) {
+                    this.end();
+                    return false;
+                }
+
+                if(bodyA.index !== bodyB.index) continue;
+
+                let newIndex = bodyA.index + 1;
+
+                if(bodyA.circleRadius >= this.circles[this.circles.length - 1].circleRadius) newIndex = 0;
+
+                this.game_mergedCircles[bodyA.index] += 1;
+
+                let midPosX = (bodyA.position.x + bodyB.position.x) / 2;
+                let midPosY = (bodyA.position.y + bodyB.position.y) / 2;
+
+                this.circles[bodyA.index].se_pop.play();
+
+                Composite.remove(this.matter.engine.world, [ bodyA, bodyB ]);
+                Composite.add(this.matter.engine.world, this.generateCircleBody(midPosX, midPosY, newIndex));
+
+                this.addPop(midPosX, midPosY, bodyA.circleRadius);
+
+                this.score_current = this.calculateScore();
+            }
         });
 
         setTimeout(() => {

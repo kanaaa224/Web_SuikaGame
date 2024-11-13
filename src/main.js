@@ -87,7 +87,7 @@ class CircleGame {
                 bottom: {
                     height: 48,
 
-                    backgroundColor: '#ffeedb'
+                    backgroundColor: '#ffd59d'
                 }
             }
         };
@@ -420,7 +420,7 @@ class CircleGame {
                 let midPosX = (bodyA.position.x + bodyB.position.x) / 2;
                 let midPosY = (bodyA.position.y + bodyB.position.y) / 2;
 
-                this.circles[bodyA.index].se_pop.play();
+                if(this.settings.playSE) this.circles[bodyA.index].se_pop.play();
 
                 Composite.remove(this.matter.engine.world, [ bodyA, bodyB ]);
                 Composite.add(this.matter.engine.world, this.generateCircleBody(midPosX, midPosY, newIndex));

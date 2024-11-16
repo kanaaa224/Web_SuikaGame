@@ -103,7 +103,7 @@ class CircleGame {
                 DROP: 4,
                 END: 5
             }
-        }
+        };
 
         this.state = this.constants.gameStates.UNINITIALIZED;
 

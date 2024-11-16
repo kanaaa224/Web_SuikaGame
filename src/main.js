@@ -484,30 +484,41 @@ class App {
         });
     }
 
-    initialize() {
-        if(document.querySelector('header')) document.querySelector('header').remove();
-        if(document.querySelector('main'))   document.querySelector('main')  .remove();
-        if(document.querySelector('footer')) document.querySelector('footer').remove();
+    storageGetData(key = '') {
+        let lsKey = location.href;
 
-        document.body.innerHTML += `
-            <main>
-                <div class="container"></div>
-            </main>
-            <header>
-                <div class="container">
-                    <div></div>
-                    <div onclick="app.setting();"><i class="bi bi-gear-wide-connected"></i></div>
-                </div>
-            </header>
-            <footer>
-                <div class="container">
-                    <p>&copy; 2023&nbsp;<a href="//github.com/kanaaa224/" target="_blank" style="color:inherit;"><u>kanaaa224</u></a>. | ${this.version}</p>
-                </div>
-            </footer>
-        `;
+        let isObject = function(value) {
+            return value !== null && typeof value === 'object';
+        };
 
-        this.game.initialize('main .container');
-        this.game.start();
+        let lsData = localStorage.getItem(lsKey);
+
+        if(!lsData) return null;
+
+        lsData = JSON.parse(lsData);
+
+        if(!isObject(lsData)) return false;
+
+        if(key) {
+            if(key in lsData) return lsData[key];
+            else return null;
+        }
+
+        return lsData;
+    }
+
+    storageSetData(setData = {}) {
+        let lsKey = location.href;
+
+        let isObject = function(value) {
+            return value !== null && typeof value === 'object';
+        };
+
+        if(!isObject(setData)) return false;
+
+        setData = JSON.stringify(setData);
+
+        localStorage.setItem(lsKey, setData);
 
         return true;
     }
@@ -586,41 +597,52 @@ class App {
         return true;
     }
 
-    storageGetData(key = '') {
-        let lsKey = location.href;
+    gameReset() {
+        if(!this.game.initialize('main .container')) return false;
+        if(!this.game.start()) return false;
 
-        let isObject = function(value) {
-            return value !== null && typeof value === 'object';
-        };
-
-        let lsData = localStorage.getItem(lsKey);
-
-        if(!lsData) return null;
-
-        lsData = JSON.parse(lsData);
-
-        if(!isObject(lsData)) return false;
-
-        if(key) {
-            if(key in lsData) return lsData[key];
-            else return null;
-        }
-
-        return lsData;
+        return true;
     }
 
-    storageSetData(setData = {}) {
-        let lsKey = location.href;
+    initialize() {
+        if(document.querySelector('header')) document.querySelector('header').remove();
+        if(document.querySelector('main'))   document.querySelector('main')  .remove();
+        if(document.querySelector('footer')) document.querySelector('footer').remove();
 
-        let isObject = function(value) {
-            return value !== null && typeof value === 'object';
-        };
+        document.body.innerHTML += `
+            <main>
+                <div class="container"></div>
+            </main>
+            <header>
+                <div class="container">
+                    <div></div>
+                    <div onclick="app.setting();"><i class="bi bi-gear-wide-connected"></i></div>
+                </div>
+            </header>
+            <footer>
+                <div class="container">
+                    <p>&copy; 2023&nbsp;<a href="//github.com/kanaaa224/" target="_blank" style="color:inherit;"><u>kanaaa224</u></a>. | ${this.version}</p>
+                </div>
+            </footer>
+        `;
 
-        if(!isObject(setData)) return false;
+        if(!this.gameReset()) return false;
 
-        setData = JSON.stringify(setData);
+        this.interval = setInterval(() => {
+            if(this.game.state == this.game.constants.gameStates.END) {
+                let modalID = 'modal_game-over';
 
-        localStorage.setItem(lsKey, setData);
+                if(!document.querySelector(`#${modalID}`)) {
+                    let modalContent = `
+                        <h1>ゲームオーバー</h1>
+                        <p>スコア: ${this.game.score_current}</p>
+                        <div class="button"><div class="clickable" onclick="app.gameReset();app.modal.destroy({ 'id': '${modalID}' });">閉じる</div></div>
+                    `
+
+                    if(!this.modal.render({ id: modalID, content: modalContent })) return false;
+                }
+            }
+        }, 100);
 
         return true;
     }

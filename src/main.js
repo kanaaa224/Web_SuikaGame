@@ -431,11 +431,9 @@ class CircleGame {
             }
         });
 
-        setTimeout(() => {
+        return setTimeout(() => {
             this.state = this.constants.gameStates.READY;
         }, 250);
-
-        return true;
     }
 }
 
